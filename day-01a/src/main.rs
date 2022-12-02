@@ -54,25 +54,40 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 fn main() {
-
-    let filename = "data/day-01a.txt";
-    let file = File::open(filename).unwrap();
-    let reader = BufReader::new(file);
+    let reader = BufReader::new(File::open("../data/day-01.txt").unwrap());
+    let mut item_count: u32 = 1;
+    let mut elf_count: u32 = 1;
     let mut total: u32 = 0;
-    let mut max: u32 = 0;
+    let mut max_elf: (u32, u32) = (0, 0);
 
-    for (_index, line) in reader.lines().enumerate() {
-        let line = line.unwrap();
-        match line.parse::<u16>() {
-            Ok(calories) => total += calories as u32,
-            Err(_) => {
-                println!("{}", total);
-                if total > max {
-                    max = total;
-                }
-                total = 0;
+    for (_index, raw_line) in reader.lines().enumerate() {
+        let line = raw_line.unwrap();
+
+        if line.is_empty() {
+            println!("Elf {:03} total: {}\n", elf_count, total);
+            if total > max_elf.1 {
+                max_elf.0 = elf_count;
+                max_elf.1 = total;
             }
-        };
+            elf_count += 1;
+            total = 0;
+            item_count = 1;
+            continue;
+        }
+
+        match line.parse::<u32>() {
+            Ok(calories) => {
+                total += calories;
+                println!("\tItem {:02}: {}", item_count, calories);
+                item_count += 1;
+            }
+            Err(e) => panic!("{:?}", e),
+        }
     }
-    println!("max: {}", max)
+
+    println!("Elf {:03} total: {}\n", elf_count, total);
+    println!(
+        "Elf {:03} has the most calories with: {}",
+        max_elf.0, max_elf.1
+    )
 }
